@@ -4,13 +4,14 @@
 #include "contiki.h"
 #include "contiki-net.h"
 #include "rest.h"
+#include "gpio.h"
 
-#if defined (CONTIKI_TARGET_SKY) /* Any other targets will be added here (&& defined (OTHER))*/
+//#if defined (CONTIKI_TARGET_SKY) /* Any other targets will be added here (&& defined (OTHER))*/
 #include "dev/light-sensor.h"
 #include "dev/battery-sensor.h"
 #include "dev/sht11-sensor.h"
 #include "dev/leds.h"
-#endif /*defined (CONTIKI_TARGET_SKY)*/
+//#endif /*defined (CONTIKI_TARGET_SKY)*/
 
 #define DEBUG 1
 #if DEBUG
@@ -55,7 +56,7 @@ discover_handler(REQUEST* request, RESPONSE* response)
   rest_set_header_content_type(response, APPLICATION_LINK_FORMAT);
 }
 
-#if defined (CONTIKI_TARGET_SKY)
+//#if defined (CONTIKI_TARGET_SKY)
 /*A simple actuator example, depending on the color query parameter and post variable mode, corresponding led is activated or deactivated*/
 RESOURCE(led, METHOD_POST | METHOD_PUT , "led");
 
@@ -64,14 +65,14 @@ led_handler(REQUEST* request, RESPONSE* response)
 {
   char color[10];
   char mode[10];
-  uint8_t led = 0;
+  uint32_t led = 0;
   int success = 1;
 
   if (rest_get_query_variable(request, "color", color, 10)) {
     PRINTF("color %s\n", color);
 
     if (!strcmp(color,"red")) {
-      led = LEDS_RED;
+      led = (1 << 11);
     } else if(!strcmp(color,"green")) {
       led = LEDS_GREEN;
     } else if ( !strcmp(color,"blue") ) {
@@ -87,9 +88,13 @@ led_handler(REQUEST* request, RESPONSE* response)
     PRINTF("mode %s\n", mode);
 
     if (!strcmp(mode, "on")) {
-      leds_on(led);
+	gpio_pad_dir_set((uint64_t) (1 << 11));
+	gpio_data_set((uint64_t) (1 << 11));
+      //leds_on(led);
     } else if (!strcmp(mode, "off")) {
-      leds_off(led);
+	gpio_pad_dir_set((uint64_t) (1 << 11));
+	gpio_data_reset((uint64_t) (1 << 11));
+      //leds_off(led);
     } else {
       success = 0;
     }
@@ -117,12 +122,12 @@ RESOURCE(light, METHOD_GET, "light");
 void
 light_handler(REQUEST* request, RESPONSE* response)
 {
-#ifdef CONTIKI_TARGET_SKY
+//#ifdef CONTIKI_TARGET_SKY
   read_light_sensor(&light_photosynthetic, &light_solar);
   sprintf(temp,"%u;%u", light_photosynthetic, light_solar);
-#else /*CONTIKI_TARGET_SKY*/
+//#else /*CONTIKI_TARGET_SKY*/
   sprintf(temp,"%d.%d", 0, 0);
-#endif /*CONTIKI_TARGET_SKY*/
+//#endif /*CONTIKI_TARGET_SKY*/
 
   char etag[4] = "ABCD";
   rest_set_header_content_type(response, TEXT_PLAIN);
@@ -137,7 +142,7 @@ toggle_handler(REQUEST* request, RESPONSE* response)
 {
   leds_toggle(LEDS_RED);
 }
-#endif /*defined (CONTIKI_TARGET_SKY)*/
+//#endif /*defined (CONTIKI_TARGET_SKY)*/
 
 
 PROCESS(rest_server_example, "Rest Server Example");
@@ -155,12 +160,14 @@ PROCESS_THREAD(rest_server_example, ev, data)
 
   rest_init();
 
-#if defined (CONTIKI_TARGET_SKY)
+	gpio_pad_dir_set((uint64_t) (1 << 11));
+
+//#if defined (CONTIKI_TARGET_SKY)
   SENSORS_ACTIVATE(light_sensor);
   rest_activate_resource(&resource_led);
   rest_activate_resource(&resource_light);
   rest_activate_resource(&resource_toggle);
-#endif /*defined (CONTIKI_TARGET_SKY)*/
+//#endif /*defined (CONTIKI_TARGET_SKY)*/
 
   rest_activate_resource(&resource_helloworld);
   rest_activate_resource(&resource_discover);
