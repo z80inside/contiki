@@ -68,21 +68,21 @@ clock_init()
 #define OUT_MODE   0      /* OFLAG is asserted while counter is active */
 
 	*TMR_ENBL = 0;                     /* tmrs reset to enabled */
-	*TMR0_SCTRL = 0;
-	*TMR0_CSCTRL =0x0040;
-	*TMR0_LOAD = 0;                    /* reload to zero */
-	*TMR0_COMP_UP = 1875;             /* trigger a reload at the end */
-	*TMR0_CMPLD1 = 1875;              /* compare 1 triggered reload level, 10HZ maybe? */
-	*TMR0_CNTR = 0;                    /* reset count register */
-	*TMR0_CTRL = (COUNT_MODE<<13) | (PRIME_SRC<<9) | (SEC_SRC<<7) | (ONCE<<6) | (LEN<<5) | (DIR<<4) | (CO_INIT<<3) | (OUT_MODE);
+	*TMR3_SCTRL = 0;
+	*TMR3_CSCTRL =0x0040;
+	*TMR3_LOAD = 0;                    /* reload to zero */
+	*TMR3_COMP_UP = 1875;             /* trigger a reload at the end */
+	*TMR3_CMPLD1 = 1875;              /* compare 1 triggered reload level, 10HZ maybe? */
+	*TMR3_CNTR = 0;                    /* reset count register */
+	*TMR3_CTRL = (COUNT_MODE<<13) | (PRIME_SRC<<9) | (SEC_SRC<<7) | (ONCE<<6) | (LEN<<5) | (DIR<<4) | (CO_INIT<<3) | (OUT_MODE);
 	*TMR_ENBL = 0xf;                   /* enable all the timers --- why not? */
 
 	enable_irq(TMR);
 
 }
 
-void tmr0_isr(void) {
-	if(bit_is_set(*TMR(0,CSCTRL),TCF1)) {
+void tmr3_isr(void) {
+	if(bit_is_set(*TMR(3,CSCTRL),TCF1)) {
 		current_clock++;
 		if((current_clock % CLOCK_CONF_SECOND) == 0) {
 			seconds++;
@@ -98,9 +98,9 @@ void tmr0_isr(void) {
 
 
 		/* clear the compare flags */
-		clear_bit(*TMR(0,SCTRL),TCF);                
-		clear_bit(*TMR(0,CSCTRL),TCF1);                
-		clear_bit(*TMR(0,CSCTRL),TCF2);                
+		clear_bit(*TMR(3,SCTRL),TCF);                
+		clear_bit(*TMR(3,CSCTRL),TCF1);                
+		clear_bit(*TMR(3,CSCTRL),TCF2);                
 		return;
 	} else {
 		/* this timer didn't create an interrupt condition */
