@@ -5,13 +5,15 @@
 #include "contiki-net.h"
 #include "rest.h"
 #include "gpio.h"
+#include "pwm.h"
+#include "rtc.h"
 
-//#if defined (CONTIKI_TARGET_SKY) /* Any other targets will be added here (&& defined (OTHER))*/
+#if defined (CONTIKI_TARGET_SKY) /* Any other targets will be added here (&& defined (OTHER))*/
 #include "dev/light-sensor.h"
 #include "dev/battery-sensor.h"
 #include "dev/sht11-sensor.h"
 #include "dev/leds.h"
-//#endif /*defined (CONTIKI_TARGET_SKY)*/
+#endif /*defined (CONTIKI_TARGET_SKY)*/
 
 #define DEBUG 1
 #if DEBUG
@@ -26,6 +28,9 @@
 #endif
 
 char temp[100];
+static int duty = 0;
+static int new = 0;
+
 
 /* Resources are defined by RESOURCE macro, signature: resource name, the http methods it handles and its url*/
 RESOURCE(helloworld, METHOD_GET, "helloworld");
@@ -36,7 +41,7 @@ RESOURCE(helloworld, METHOD_GET, "helloworld");
 void
 helloworld_handler(REQUEST* request, RESPONSE* response)
 {
-  sprintf(temp,"Hello World!\n");
+  sprintf(temp,"Hola! Soy la placa number 1.\n");
 
   rest_set_header_content_type(response, TEXT_PLAIN);
   rest_set_response_payload(response, (uint8_t*)temp, strlen(temp));
@@ -56,7 +61,25 @@ discover_handler(REQUEST* request, RESPONSE* response)
   rest_set_header_content_type(response, APPLICATION_LINK_FORMAT);
 }
 
-//#if defined (CONTIKI_TARGET_SKY)
+RESOURCE(pwm0, METHOD_POST, "pwm0");
+void pwm0_handler(REQUEST* request, RESPONSE* response)
+{
+	char req_duty[4];
+	int rcv_duty;
+
+	if (rest_get_post_variable(request, "duty", req_duty, 4)) {
+		rcv_duty = strtol(req_duty, (char **) NULL, 10);
+		if (rcv_duty < 0 || rcv_duty > 100) {
+			rest_set_response_status(response, BAD_REQUEST_400);
+			return;
+		}
+		PRINTF("duty: %d\n", rcv_duty);
+		rest_set_response_status(response, OK_200);
+		new = rcv_duty;
+	}
+}
+
+#if defined (CONTIKI_TARGET_SKY)
 /*A simple actuator example, depending on the color query parameter and post variable mode, corresponding led is activated or deactivated*/
 RESOURCE(led, METHOD_POST | METHOD_PUT , "led");
 
@@ -116,18 +139,19 @@ read_light_sensor(uint16_t* light_1, uint16_t* light_2)
   *light_1 = light_sensor.value(LIGHT_SENSOR_PHOTOSYNTHETIC);
   *light_2 = light_sensor.value(LIGHT_SENSOR_TOTAL_SOLAR);
 }
+#endif
 
 /*A simple getter example. Returns the reading from light sensor with a simple etag*/
 RESOURCE(light, METHOD_GET, "light");
 void
 light_handler(REQUEST* request, RESPONSE* response)
 {
-//#ifdef CONTIKI_TARGET_SKY
+#ifdef CONTIKI_TARGET_SKY
   read_light_sensor(&light_photosynthetic, &light_solar);
   sprintf(temp,"%u;%u", light_photosynthetic, light_solar);
-//#else /*CONTIKI_TARGET_SKY*/
+#else /*CONTIKI_TARGET_SKY*/
   sprintf(temp,"%d.%d", 0, 0);
-//#endif /*CONTIKI_TARGET_SKY*/
+#endif /*CONTIKI_TARGET_SKY*/
 
   char etag[4] = "ABCD";
   rest_set_header_content_type(response, TEXT_PLAIN);
@@ -140,13 +164,42 @@ RESOURCE(toggle, METHOD_GET | METHOD_PUT | METHOD_POST, "toggle");
 void
 toggle_handler(REQUEST* request, RESPONSE* response)
 {
-  leds_toggle(LEDS_RED);
+//  leds_toggle(LEDS_RED);
 }
 //#endif /*defined (CONTIKI_TARGET_SKY)*/
 
 
 PROCESS(rest_server_example, "Rest Server Example");
-AUTOSTART_PROCESSES(&rest_server_example);
+PROCESS(pwm_control, "pwm-control");
+AUTOSTART_PROCESSES(&rest_server_example, &pwm_control);
+
+PROCESS_THREAD(pwm_control, ev, data)
+{
+	static struct etimer et1;
+	static struct etimer et2;
+	int i;
+
+	PROCESS_BEGIN();
+	while (1) {
+		etimer_set(&et1, CLOCK_SECOND / 2);
+		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et1));
+		if (duty < new) {
+			for (i = duty; i <= new; ++i) {
+				pwm_duty_ex(0, (int)((65536 * (100 - i)) / 100));
+				rtc_delay_ms((i - duty)/2);
+			}
+		}
+		else if (new < duty) {
+			for (i = duty; i >= new ; --i) {
+				pwm_duty_ex(0, (int)((65536 * (100 - i)) / 100));
+				rtc_delay_ms((duty - i)/2);
+			}
+		}
+		duty = new;
+	}
+	PROCESS_END();
+}
+
 
 PROCESS_THREAD(rest_server_example, ev, data)
 {
@@ -161,15 +214,23 @@ PROCESS_THREAD(rest_server_example, ev, data)
   rest_init();
 
 	gpio_pad_dir_set((uint64_t) (1 << 11));
+	pwm_init_ex(0, 500, 65535, 1);
+	pwm_duty_ex(0, 65535);
+//	pwm_init_ex(1, 500, 0, 1);
+//	pwm_init_ex(2, 500, 0, 1);
+//	pwm_init_ex(3, 500, 10, 1);
+	rtc_init_osc(0);
+	rtc_calibrate();
 
-//#if defined (CONTIKI_TARGET_SKY)
+#if defined (CONTIKI_TARGET_SKY)
   SENSORS_ACTIVATE(light_sensor);
   rest_activate_resource(&resource_led);
   rest_activate_resource(&resource_light);
   rest_activate_resource(&resource_toggle);
-//#endif /*defined (CONTIKI_TARGET_SKY)*/
+#endif /*defined (CONTIKI_TARGET_SKY)*/
 
   rest_activate_resource(&resource_helloworld);
+  rest_activate_resource(&resource_pwm0);
   rest_activate_resource(&resource_discover);
 
   PROCESS_END();
