@@ -13,7 +13,7 @@ CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\"
 PROJECT_SOURCEFILES += slip-bridge.c
 else
 APPS += webserver
-CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\" -DWEBSERVER
+CFLAGS += -DPROJECT_CONF_H=\"project-conf.h\" -DWEBSERVER -DUART_DEBUG
 PROJECT_SOURCEFILES += slip-bridge.c httpd-simple.c
 endif
 
