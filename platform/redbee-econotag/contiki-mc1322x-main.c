@@ -469,7 +469,7 @@ main(void)
     uip_sethostaddr(&hostaddr);
     uip_setnetmask(&netmask);
     uip_over_mesh_set_net(&hostaddr, &netmask);
-    /*    uip_fw_register(&slipif);*/
+        /* uip_fw_register(&slipif); */
     uip_over_mesh_set_gateway_netif(&slipif);
     uip_fw_default(&meshif);
     uip_over_mesh_init(UIP_OVER_MESH_CHANNEL);
