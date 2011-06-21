@@ -180,10 +180,10 @@ init_lowlevel(void)
 
 	trim_xtal();
 	
-if UART_DEBUG
+#if UART_DEBUG
 	/* uart init */
 	uart_init(INC, MOD, SAMP);
-endif
+#endif
 
 	default_vreg_init();
 
