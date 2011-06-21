@@ -160,5 +160,6 @@ uint16_t ADC_READ(void);
 void read_scanners(void);
 void adc_init(void);
 void adc_service(void);
+void adc_set_vrefhl(int state);
 
 #endif

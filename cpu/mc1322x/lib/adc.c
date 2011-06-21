@@ -136,3 +136,12 @@ void adc_init(void) {
 		}
 	}
 }
+
+void adc_set_vrefhl(int state)
+{
+	if (state == 1)
+		ADC->CONTROLbits.AD1_FREFHL_EN = 1;
+	else if (state == 0)
+		ADC->CONTROLbits.AD1_FREFHL_EN = 0;
+}
+
