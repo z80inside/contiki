@@ -180,10 +180,10 @@ init_lowlevel(void)
 
 	trim_xtal();
 	
-#if UART_DEBUG
+if UART_DEBUG
 	/* uart init */
 	uart_init(INC, MOD, SAMP);
-#endif
+endif
 
 	default_vreg_init();
 
@@ -498,7 +498,6 @@ main(void)
 			  uart1_input_handler(uart1_getc());
 		  }
 	  }
-	         
 	  process_run();
   }
   
