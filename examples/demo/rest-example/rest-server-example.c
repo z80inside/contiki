@@ -7,6 +7,7 @@
 #include "gpio.h"
 #include "pwm.h"
 #include "rtc.h"
+#include "adc.h"
 
 #if defined (CONTIKI_TARGET_SKY) /* Any other targets will be added here (&& defined (OTHER))*/
 #include "dev/light-sensor.h"
@@ -30,7 +31,7 @@
 char temp[100];
 static int duty = 0;
 static int new = 0;
-
+uint16_t adcread;
 
 /* Resources are defined by RESOURCE macro, signature: resource name, the http methods it handles and its url*/
 RESOURCE(helloworld, METHOD_GET, "helloworld");
@@ -41,7 +42,7 @@ RESOURCE(helloworld, METHOD_GET, "helloworld");
 void
 helloworld_handler(REQUEST* request, RESPONSE* response)
 {
-  sprintf(temp,"Hola! Soy la placa number 1.\n");
+  sprintf(temp,"Placa medidora de consumo a su servicio.\n");
 
   rest_set_header_content_type(response, TEXT_PLAIN);
   rest_set_response_payload(response, (uint8_t*)temp, strlen(temp));
@@ -77,6 +78,20 @@ void pwm0_handler(REQUEST* request, RESPONSE* response)
 		rest_set_response_status(response, OK_200);
 		new = rcv_duty;
 	}
+}
+
+RESOURCE(adc, METHOD_GET, "adc");
+void adc_handler(REQUEST* request, RESPONSE* response)
+{
+	adcread = ADC_READ();
+	ADC_flush();
+	adc_service();
+
+	sprintf(temp,"%d\n", adcread);
+	printf("%d\n", adcread);
+
+	rest_set_header_content_type(response, TEXT_PLAIN);
+	rest_set_response_payload(response, (uint8_t*)temp, strlen(temp));
 }
 
 #if defined (CONTIKI_TARGET_SKY)
@@ -171,12 +186,12 @@ toggle_handler(REQUEST* request, RESPONSE* response)
 
 PROCESS(rest_server_example, "Rest Server Example");
 PROCESS(pwm_control, "pwm-control");
+//PROCESS(adc_control, "adc-control");
 AUTOSTART_PROCESSES(&rest_server_example, &pwm_control);
 
 PROCESS_THREAD(pwm_control, ev, data)
 {
 	static struct etimer et1;
-	static struct etimer et2;
 	int i;
 
 	PROCESS_BEGIN();
@@ -200,6 +215,21 @@ PROCESS_THREAD(pwm_control, ev, data)
 	PROCESS_END();
 }
 
+/*
+PROCESS_THREAD(adc_control, ev, data)
+{
+	static struct etimer et1;
+	PROCESS_BEGIN();
+	while (1) {
+		etimer_set(&et1, CLOCK_SECOND);
+		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&et1));
+		adcread = ADC_READ();
+		ADC_flush();
+		adc_service();
+	}
+	PROCESS_END();
+}
+*/
 
 PROCESS_THREAD(rest_server_example, ev, data)
 {
@@ -213,12 +243,18 @@ PROCESS_THREAD(rest_server_example, ev, data)
 
   rest_init();
 
+	/* Timer0 PWM setup */
 	gpio_pad_dir_set((uint64_t) (1 << 11));
 	pwm_init_ex(0, 500, 65535, 1);
 	pwm_duty_ex(0, 65535);
-//	pwm_init_ex(1, 500, 0, 1);
-//	pwm_init_ex(2, 500, 0, 1);
-//	pwm_init_ex(3, 500, 10, 1);
+
+	/* ADC setup (Channle 0) */
+	adc_init();
+	adc_select_channels(1);
+	adc_enable();
+	adc_service();
+
+	/* RTC setup */
 	rtc_init_osc(0);
 	rtc_calibrate();
 
@@ -231,6 +267,7 @@ PROCESS_THREAD(rest_server_example, ev, data)
 
   rest_activate_resource(&resource_helloworld);
   rest_activate_resource(&resource_pwm0);
+  rest_activate_resource(&resource_adc);
   rest_activate_resource(&resource_discover);
 
   PROCESS_END();
