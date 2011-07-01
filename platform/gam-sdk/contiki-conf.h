@@ -87,7 +87,7 @@
 #define BLOCKING_TX 1
 #define NULLRDC_CONF_802154_AUTOACK_HW 1
 
-#define USE_WDT 0
+#define USE_WDT 1
 
 #ifndef WDT_TIMEOUT
 #define WDT_TIMEOUT 5000 /* watchdog timeout in ms */

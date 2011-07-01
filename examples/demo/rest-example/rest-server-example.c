@@ -31,7 +31,6 @@
 char temp[100];
 static int duty = 0;
 static int new = 0;
-uint16_t adcread;
 
 /* Resources are defined by RESOURCE macro, signature: resource name, the http methods it handles and its url*/
 RESOURCE(helloworld, METHOD_GET, "helloworld");
@@ -42,7 +41,7 @@ RESOURCE(helloworld, METHOD_GET, "helloworld");
 void
 helloworld_handler(REQUEST* request, RESPONSE* response)
 {
-  sprintf(temp,"Placa medidora de consumo a su servicio.\n");
+  sprintf(temp,"Medidora de consumo");
 
   rest_set_header_content_type(response, TEXT_PLAIN);
   rest_set_response_payload(response, (uint8_t*)temp, strlen(temp));
@@ -83,12 +82,32 @@ void pwm0_handler(REQUEST* request, RESPONSE* response)
 RESOURCE(adc, METHOD_GET, "adc");
 void adc_handler(REQUEST* request, RESPONSE* response)
 {
-	adcread = ADC_READ();
-	ADC_flush();
-	adc_service();
+	uint8_t i;
+	uint32_t adcread = 0;
 
-	sprintf(temp,"%d\n", adcread);
-	printf("%d\n", adcread);
+	adc_service();
+	rtc_delay_ms(10);
+	for (i = 0; i < 50; ++i) {
+		adc_service();
+		adcread += adc_reading[0];
+		rtc_delay_ms(10);
+	}
+	/*
+	rtc_delay_ms(100);
+	for (i = 0; i < 500; ++i) {
+		adc_service();
+		adcread[1] += adc_reading[0];
+	}
+	rtc_delay_ms(100);
+	for (i = 0; i < 500; ++i) {
+		adc_service();
+		adcread[2] += adc_reading[0];
+	}
+
+	real_value = ((adcread[0] / 500) + (adcread[1] / 500) + 
+			(adcread[2] / 500)) / 3;
+	*/
+	sprintf(temp,"%d\n", adcread / 50);
 
 	rest_set_header_content_type(response, TEXT_PLAIN);
 	rest_set_response_payload(response, (uint8_t*)temp, strlen(temp));
@@ -248,7 +267,7 @@ PROCESS_THREAD(rest_server_example, ev, data)
 	pwm_init_ex(0, 500, 65535, 1);
 	pwm_duty_ex(0, 65535);
 
-	/* ADC setup (Channle 0) */
+	/* ADC setup (Channel 0) */
 	adc_init();
 	adc_select_channels(1);
 	adc_enable();

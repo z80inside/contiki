@@ -1,4 +1,4 @@
-all: rest-server-example coap-client-example
+all: rest-server-example 
 
 ifndef TARGET
 TARGET=sky
