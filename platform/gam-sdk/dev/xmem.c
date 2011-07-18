@@ -12,6 +12,10 @@ nvmType_t type = 0;
 void xmem_init(void)
 {
 	nvmErr_t err;
+	gpio_select_function(4, 1);
+	gpio_select_function(5, 1);
+	gpio_select_function(6, 1);
+	gpio_select_function(7, 1);
 	err = nvm_detect(gNvmExternalInterface_c, &type);
 }
 
