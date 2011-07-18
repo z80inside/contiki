@@ -1,9 +1,9 @@
 CONTIKI = ../..
 ifndef TARGET
-TARGET=sky
+TARGET=gam-sdk
 endif
 
-all: blink sky-collect #rt-leds test-button test-cfs tcprudolph0
+all: test-cfs tcprudolph0
 
 %.tgz: %.ihex
 	mkdir $(basename $<) ; \

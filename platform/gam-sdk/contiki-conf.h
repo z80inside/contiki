@@ -63,6 +63,8 @@
 /* since leds_arch hits the entire gpio_data */
 #define BLINK_SECONDS 0
 
+#define UART_DEBUG 1
+
 #define CCIF
 #define CLIF
 
@@ -239,5 +241,7 @@
 #ifdef PROJECT_CONF_H
 #include PROJECT_CONF_H
 #endif /* PROJECT_CONF_H */
+
+#define XMEM_ERASE_UNIT_SIZE (64*1024L)
 
 #endif /* __CONTIKI_CONF_H__ */

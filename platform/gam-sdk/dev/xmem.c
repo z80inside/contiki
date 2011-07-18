@@ -23,17 +23,17 @@ int xmem_pread(void *buf, int nbytes, unsigned long offset)
 {
 	nvmErr_t err;
 	err = nvm_read(gNvmExternalInterface_c, type, buf, offset, nbytes);
-	if (err == gNvmErrNoError)
+	if (err == gNvmErrNoError_c)
 		return nbytes;
 	else
 		return 0;
 }
 
-int xmem_pwrite(const void *buf, int nbytes, unsigned long offset)
+int xmem_pwrite(void *buf, int nbytes, unsigned long offset)
 {
 	nvmErr_t err;
 	err = nvm_write(gNvmExternalInterface_c, type, buf, offset, nbytes);
-	if (err == gNvmErrNoError)
+	if (err == gNvmErrNoError_c)
 		return nbytes;
 	else
 		return 0;

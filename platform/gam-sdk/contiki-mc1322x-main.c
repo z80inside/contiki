@@ -61,6 +61,9 @@
 #include "sys/autostart.h"
 #include "sys/profile.h"
 
+#include "cfs-coffee-arch.h"
+#include "cfs/cfs-coffee.h"
+
 /* from libmc1322x */
 #include "mc1322x.h"
 #include "default_lowlevel.h"

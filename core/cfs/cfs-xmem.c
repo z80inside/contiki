@@ -110,7 +110,7 @@ cfs_read(int f, void *buf, unsigned int len)
 }
 /*---------------------------------------------------------------------------*/
 int
-cfs_write(int f, const void *buf, unsigned int len)
+cfs_write(int f, void *buf, unsigned int len)
 {
   if(file.fileptr >= CFS_XMEM_SIZE) {
     return 0;
