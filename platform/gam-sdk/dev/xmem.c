@@ -52,6 +52,8 @@ int xmem_erase(long nbytes, unsigned long offset)
 		return -1;
 	}
 	while (offset < end) {
+		printf("offset = %d   end = %d\n", offset, end);
+		printf("Erasing sector %d\n", (offset / 65536) -1);
 		err = nvm_erase(gNvmExternalInterface_c, type, offset / 65536);
 		offset += 65536;
 	}

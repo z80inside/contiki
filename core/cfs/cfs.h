@@ -205,7 +205,7 @@ CCIF int cfs_read(int fd, void *buf, unsigned int len);
  *             cfs_open() and the CFS_WRITE flag.
  */
 #ifndef cfs_write
-CCIF int cfs_write(int fd, const void *buf, unsigned int len);
+CCIF int cfs_write(int fd, void *buf, unsigned int len);
 #endif
 
 /**

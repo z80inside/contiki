@@ -49,8 +49,8 @@
 #include "dev/rom.h"
 #include "dev/xmem.h"
 
-#define NDEBUG
-#include "lib/assert.h"
+//#define NDEBUG
+//#include "lib/assert.h"
 
 #ifdef NDEBUG
 #define PRINTF(...) do {} while (0)

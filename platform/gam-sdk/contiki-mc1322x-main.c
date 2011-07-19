@@ -70,7 +70,7 @@
 #include "contiki-maca.h"
 #include "contiki-uart.h"
 
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG
 #include <stdio.h>
 #define PRINTF(...) printf(__VA_ARGS__)
@@ -341,6 +341,8 @@ main(void)
 	/* control TX_ON with the radio */
 	GPIO->FUNC_SEL.GPIO_44 = 2;
 	GPIO->PAD_DIR.GPIO_44 = 1;
+
+	xmem_init();
 
 	/* Process subsystem */
 	process_init();

@@ -35,6 +35,7 @@
 
 #include "cfs/cfs.h"
 #include "dev/xmem.h"
+#include <stdio.h>
 
 struct filestate {
   int flag;
@@ -63,6 +64,8 @@ static struct filestate file;
 int
 cfs_open(const char *n, int f)
 {
+  printf("open/close %d\n", file.flag);
+  printf("read/write %d\n", f);
   if(file.flag == FLAG_FILE_CLOSED) {
     file.flag = FLAG_FILE_OPEN;
     if(f & CFS_READ) {
@@ -74,6 +77,7 @@ cfs_open(const char *n, int f)
       } else {
 	file.fileptr = 0;
 	file.filesize = 0;
+	printf("xmem_erase\n");
 	xmem_erase(CFS_XMEM_SIZE, CFS_XMEM_OFFSET);
       }
     }

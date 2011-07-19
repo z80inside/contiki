@@ -53,14 +53,16 @@ PROCESS_THREAD(cfs_process, ev, data)
   {
     int i, j, fd;
     int errors = 0;
-    uint16_t filesize = 65000;
+    uint16_t filesize = 500;
 #define CHUNKSIZE 128
 
+    printf("Opening file\n");
     fd = cfs_open("hej", CFS_WRITE);
     if(fd < 0) {
       printf("could not open file for writing, aborting\n");
       errors++;
     } else {
+      printf("File opened for writing. Descriptor = %d\n", fd);
       unsigned char buf[CHUNKSIZE];
       for(i = 0; i < filesize; i += CHUNKSIZE) {
 	for(j = 0; j < CHUNKSIZE; ++j) {
@@ -101,6 +103,7 @@ PROCESS_THREAD(cfs_process, ev, data)
     if(fd < 0) {
       printf("could not open file for writing, aborting\n");
     } else {
+      printf("File opened for writing. Descriptor = %d\n", fd);
       unsigned char buf[CHUNKSIZE];
       for(i = 0; i < filesize; i += CHUNKSIZE) {
 	for(j = 0; j < CHUNKSIZE; ++j) {
@@ -116,6 +119,7 @@ PROCESS_THREAD(cfs_process, ev, data)
     }
 
     fd = cfs_open("hej", CFS_READ);
+    fd = 0;
     if(fd < 0) {
       printf("could not open file for reading, aborting\n");
     } else {

@@ -3,7 +3,7 @@ ifndef TARGET
 TARGET=gam-sdk
 endif
 
-all: test-cfs tcprudolph0
+all: test-cfs test-coffee
 
 %.tgz: %.ihex
 	mkdir $(basename $<) ; \
