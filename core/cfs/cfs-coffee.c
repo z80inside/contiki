@@ -46,7 +46,7 @@
 #include <limits.h>
 #include <string.h>
 
-#define DEBUG 0
+#define DEBUG 1
 #if DEBUG
 #include <stdio.h>
 #define PRINTF(...) printf(__VA_ARGS__)
@@ -539,6 +539,7 @@ find_contiguous_pages(coffee_page_t amount)
   coffee_page_t page, start;
   struct file_header hdr;
 
+  PRINTF("Finding contiguous pages. Amount %d\n", amount);
   start = INVALID_PAGE;
   for(page = *next_free; page < COFFEE_PAGE_COUNT;) {
     read_header(&hdr, page);
@@ -633,11 +634,14 @@ reserve(const char *name, coffee_page_t pages,
   coffee_page_t page;
   struct file *file;
 
+  PRINTF("Reserving file space\n");
+
   if(!allow_duplicates && find_file(name) != NULL) {
     return NULL;
   }
 
   page = find_contiguous_pages(pages);
+  PRINTF("Page: %d\n", page);
   if(page == INVALID_PAGE) {
     if(*gc_wait) {
       return NULL;
@@ -1010,6 +1014,7 @@ cfs_open(const char *name, int flags)
   fdp->flags = 0;
 
   fdp->file = find_file(name);
+  PRINTF("\nDescriptor: %d      file: %d\n", fd, fdp->file);
   if(fdp->file == NULL) {
     if((flags & (CFS_READ | CFS_WRITE)) == CFS_READ) {
       return -1;
@@ -1149,7 +1154,7 @@ cfs_read(int fd, void *buf, unsigned size)
 }
 /*---------------------------------------------------------------------------*/
 int
-cfs_write(int fd, const void *buf, unsigned size)
+cfs_write(int fd, void *buf, unsigned size)
 {
   struct file_desc *fdp;
   struct file *file;

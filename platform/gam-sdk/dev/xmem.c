@@ -43,18 +43,20 @@ int xmem_erase(long nbytes, unsigned long offset)
 {
 	nvmErr_t err;
 	unsigned long end = nbytes + offset;
-	if (nbytes % 65536 != 0) {
-		printf("xmem_erase: bad size\n");
-		return -1;
-	}
-	if (offset % 65536 != 0) {
+	printf("Offset: %d     nbytes: %d\n", offset, nbytes);
+	if (offset % 32768 != 0) {
 		printf("xmem_erase: bad offset\n");
 		return -1;
 	}
-	while (offset < end) {
+	if (end > CFS_XMEM_CONF_SIZE) {
+		printf("xmem_erase: bad size\n");
+		return -1;
+	}
+	while (offset <= end) {
 		printf("offset = %d   end = %d\n", offset, end);
-		printf("Erasing sector %d\n", (offset / 65536) -1);
-		err = nvm_erase(gNvmExternalInterface_c, type, offset / 65536);
-		offset += 65536;
+		printf("Erasing sector %d\n", offset / XMEM_ERASE_UNIT_SIZE);
+		err = nvm_erase(gNvmExternalInterface_c, type,
+				1 << (offset / XMEM_ERASE_UNIT_SIZE));
+		offset += XMEM_ERASE_UNIT_SIZE;
 	}
 }

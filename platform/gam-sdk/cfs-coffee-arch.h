@@ -7,7 +7,7 @@
 /* Coffee configuration parameters. */
 #define COFFEE_SECTOR_SIZE		65536UL
 #define COFFEE_PAGE_SIZE		256UL
-#define COFFEE_START			COFFEE_SECTOR_SIZE
+#define COFFEE_START			0
 #define COFFEE_SIZE			131072UL
 #define COFFEE_NAME_LENGTH		16
 #define COFFEE_MAX_OPEN_FILES		6

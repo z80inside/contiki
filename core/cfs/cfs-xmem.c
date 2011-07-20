@@ -78,7 +78,7 @@ cfs_open(const char *n, int f)
 	file.fileptr = 0;
 	file.filesize = 0;
 	printf("xmem_erase\n");
-	xmem_erase(CFS_XMEM_SIZE, CFS_XMEM_OFFSET);
+	xmem_erase(0, XMEM_ERASE_UNIT_SIZE);
       }
     }
     return 1;
@@ -103,7 +103,6 @@ cfs_read(int f, void *buf, unsigned int len)
   if(file.fileptr + len > file.filesize) {
     len = file.filesize - file.fileptr;
   }
-
   if(f == 1) {
     xmem_pread(buf, len, CFS_XMEM_OFFSET + file.fileptr);
     file.fileptr += len;
@@ -127,7 +126,6 @@ cfs_write(int f, void *buf, unsigned int len)
     /* Extend the size of the file. */
     file.filesize = file.fileptr + len;
   }
-
   if(f == 1) {
     xmem_pwrite(buf, len, CFS_XMEM_OFFSET + file.fileptr);
     file.fileptr += len;

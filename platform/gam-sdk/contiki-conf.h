@@ -242,6 +242,7 @@
 #include PROJECT_CONF_H
 #endif /* PROJECT_CONF_H */
 
-#define XMEM_ERASE_UNIT_SIZE (64*1024L)
+#define XMEM_ERASE_UNIT_SIZE 32768
+#define CFS_XMEM_CONF_SIZE 524288
 
 #endif /* __CONTIKI_CONF_H__ */
