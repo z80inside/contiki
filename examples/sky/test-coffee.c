@@ -221,6 +221,7 @@ coffee_file_test(void)
   if(cfs_coffee_reserve("T2", FILE_SIZE) < 0) {
     FAIL(-24);
   }
+#if 0
 
   /* Test 16: Test multiple writes at random offset. */
   for(r = 0; r < 100; r++) {
@@ -300,10 +301,10 @@ coffee_file_test(void)
     FAIL(-36);
   }
   cfs_close(afd);
-
+#endif
   error = 0;
 end:
-  cfs_close(wfd); cfs_close(rfd); cfs_close(afd);
+  cfs_close(wfd); //cfs_close(rfd); cfs_close(afd);
   return error;
 }
 /*---------------------------------------------------------------------------*/
@@ -316,7 +317,7 @@ PROCESS_THREAD(testcoffee_process, ev, data)
   start = clock_seconds();
   printf("Coffee format: %d\n", cfs_coffee_format());
   printf("Coffee file test: %d\n", coffee_file_test());
-  printf("Coffee garbage collection test: %d\n", coffee_gc_test());
+//  printf("Coffee garbage collection test: %d\n", coffee_gc_test());
   printf("Test time: %d seconds\n", (int)(clock_seconds() - start));
 
   PROCESS_END();

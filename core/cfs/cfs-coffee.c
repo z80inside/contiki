@@ -475,6 +475,8 @@ find_file(const char *name)
   int i;
   struct file_header hdr;
   coffee_page_t page;
+
+  printf("Searching for file %s . . .\n", name);
   
   /* First check if the file metadata is cached. */
   for(i = 0; i < COFFEE_MAX_OPEN_FILES; i++) {
@@ -492,10 +494,12 @@ find_file(const char *name)
   for(page = 0; page < COFFEE_PAGE_COUNT; page = next_file(page, &hdr)) {
     read_header(&hdr, page);
     if(HDR_ACTIVE(hdr) && !HDR_LOG(hdr) && strcmp(name, hdr.name) == 0) {
+      printf("Found file %s. Loading . . .\n", name);
       return load_file(page, &hdr);
     }
   }
 
+  printf("File %s not found\n", name);
   return NULL;
 }
 /*---------------------------------------------------------------------------*/
@@ -541,19 +545,27 @@ find_contiguous_pages(coffee_page_t amount)
 
   PRINTF("Finding contiguous pages. Amount %d\n", amount);
   start = INVALID_PAGE;
+  page = *next_free;
+  printf("Page %d of %d\n", page, COFFEE_PAGE_COUNT);
   for(page = *next_free; page < COFFEE_PAGE_COUNT;) {
     read_header(&hdr, page);
+    if (hdr.flags == 0xff)
+	    hdr.flags = 0;
+    printf("hdr flags = %x -> Allocated = %d\n", hdr.flags,
+		    hdr.flags & HDR_FLAG_ALLOCATED);
     if(HDR_FREE(hdr)) {
       if(start == INVALID_PAGE) {
 	start = page;
         if(start + amount >= COFFEE_PAGE_COUNT) {
           /* We can stop immediately if the remaining pages are not enough. */
+	  printf("Stop.\n");
           break;
         }
       }
 
       /* All remaining pages in this sector are free --
          jump to the next sector. */
+      printf("Jumping to the next sector\n");
       page = next_file(page, &hdr);
 
       if(start + amount <= page) {
@@ -611,9 +623,9 @@ remove_by_page(coffee_page_t page, int remove_log, int close_fds,
   }
 
 #if !COFFEE_EXTENDED_WEAR_LEVELLING
-  if(gc_allowed) {
-    collect_garbage(GC_RELUCTANT);
-  }
+//  if(gc_allowed) {
+//    collect_garbage(GC_RELUCTANT);
+//  }
 #endif
 
   return 0;
@@ -646,7 +658,7 @@ reserve(const char *name, coffee_page_t pages,
     if(*gc_wait) {
       return NULL;
     }
-    collect_garbage(GC_GREEDY);
+//    collect_garbage(GC_GREEDY);
     page = find_contiguous_pages(pages);
     if(page == INVALID_PAGE) {
       *gc_wait = 1;
