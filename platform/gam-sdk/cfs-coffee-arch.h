@@ -5,7 +5,7 @@
 #include "dev/xmem.h"
 
 /* Coffee configuration parameters. */
-#define COFFEE_SECTOR_SIZE		65536UL
+#define COFFEE_SECTOR_SIZE		32768UL
 #define COFFEE_PAGE_SIZE		256UL
 #define COFFEE_START			0
 #define COFFEE_SIZE			131072UL

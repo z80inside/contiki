@@ -47,7 +47,8 @@ include $(CONTIKI)/core/net/mac/Makefile.mac
 SYSTEM  = process.c procinit.c autostart.c elfloader.c profile.c \
           timetable.c timetable-aggregate.c compower.c serial-line.c
 THREADS = mt.c
-CFS	= cfs-xmem.c
+#CFS	= cfs-xmem.c
+COFFEE	= cfs-coffee.c
 LIBS    = memb.c mmem.c timer.c list.c etimer.c ctimer.c energest.c rtimer.c stimer.c \
           print-stats.c ifft.c crc16.c random.c checkpoint.c ringbuf.c
 DEV     = nullradio.c
@@ -71,9 +72,9 @@ CTK     = ctk.c
 CTKVNC  = $(CTK) ctk-vncserver.c libconio.c vnc-server.c vnc-out.c ctk-vncfont.c
 
 ifndef CONTIKI_NO_NET
-  CONTIKIFILES = $(SYSTEM) $(CFS) $(LIBS) $(NET) $(THREADS) $(DHCP) $(DEV)
+  CONTIKIFILES = $(SYSTEM) $(CFS) $(COFFEE) $(LIBS) $(NET) $(THREADS) $(DHCP) $(DEV)
 else
-  CONTIKIFILES = $(SYSTEM) $(CFS) $(LIBS) $(THREADS) $(DEV) sicslowpan.c fakeuip.c
+  CONTIKIFILES = $(SYSTEM) $(CFS) $(COFFEE) $(LIBS) $(THREADS) $(DEV) sicslowpan.c fakeuip.c
 endif
 
 CONTIKI_SOURCEFILES += $(CONTIKIFILES)

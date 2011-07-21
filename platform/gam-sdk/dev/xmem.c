@@ -52,7 +52,7 @@ int xmem_erase(long nbytes, unsigned long offset)
 		printf("xmem_erase: bad size\n");
 		return -1;
 	}
-	while (offset <= end) {
+	while (offset < end) {
 		printf("offset = %d   end = %d\n", offset, end);
 		printf("Erasing sector %d\n", offset / XMEM_ERASE_UNIT_SIZE);
 		err = nvm_erase(gNvmExternalInterface_c, type,
