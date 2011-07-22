@@ -43,6 +43,7 @@
 #include "cfs/cfs-coffee.h"
 #include "lib/crc16.h"
 #include "lib/random.h"
+#include "Delay.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -100,12 +101,16 @@ coffee_file_test(void)
     buf[r] = r;
   }
 
+    DelayMs(1000);
+  printf("===== Test 1 =====\n");
   /* Test 1: Open for writing. */
   wfd = cfs_open("T1", CFS_WRITE);
   if(wfd < 0) {
     FAIL(-1);
   }
 
+    DelayMs(1000);
+  printf("===== Test 2 =====\n");
   /* Test 2: Write buffer. */
   r = cfs_write(wfd, buf, sizeof(buf));
   if(r < 0) {
@@ -114,27 +119,41 @@ coffee_file_test(void)
     FAIL(-3);
   }
 
+    DelayMs(1000);
+  printf("===== Test 3 =====\n");
   /* Test 3: Deny reading. */
   r = cfs_read(wfd, buf, sizeof(buf));
   if(r >= 0) {
     FAIL(-4);
   }
 
+    DelayMs(1000);
+  printf("===== Test 4 =====\n");
   /* Test 4: Open for reading. */
   rfd = cfs_open("T1", CFS_READ);
   if(rfd < 0) {
     FAIL(-5);
   }
 
+    DelayMs(1000);
+  printf("===== Test 5 =====\n");
   /* Test 5: Write to read-only file. */
   r = cfs_write(rfd, buf, sizeof(buf));
   if(r >= 0) {
     FAIL(-6);
   }
 
+    DelayMs(1000);
+  printf("===== Test 7 =====\n");
   /* Test 7: Read the buffer written in Test 2. */
   memset(buf, 0, sizeof(buf));
   r = cfs_read(rfd, buf, sizeof(buf));
+  /*
+  printf("\nBuffer: \n");
+  for (i = 0; i < r; ++i) {
+  	printf("  %x  ", buf[i]);
+  }
+  */
   if(r < 0) {
     FAIL(-8);
   } else if(r < sizeof(buf)) {
@@ -142,6 +161,8 @@ coffee_file_test(void)
     FAIL(-9);
   }
 
+    DelayMs(1000);
+  printf("===== Test 8 =====\n");
   /* Test 8: Verify that the buffer is correct. */
   for(r = 0; r < sizeof(buf); r++) {
     if(buf[r] != r) {
@@ -150,11 +171,15 @@ coffee_file_test(void)
     }
   }
 
+    DelayMs(1000);
+  printf("===== Test 9 =====\n");
   /* Test 9: Seek to beginning. */
   if(cfs_seek(wfd, 0, CFS_SEEK_SET) != 0) {
     FAIL(-11);
   }
 
+    DelayMs(1000);
+  printf("===== Test 10 =====\n");
   /* Test 10: Write to the log. */
   r = cfs_write(wfd, buf, sizeof(buf));
   if(r < 0) {
@@ -163,6 +188,8 @@ coffee_file_test(void)
     FAIL(-13);
   }
 
+    DelayMs(1000);
+  printf("===== Test 11 =====\n");
   /* Test 11: Read the data from the log. */
   cfs_seek(rfd, 0, CFS_SEEK_SET);
   memset(buf, 0, sizeof(buf));
@@ -173,6 +200,8 @@ coffee_file_test(void)
     FAIL(-15);
   }
 
+    DelayMs(1000);
+  printf("===== Test 12 =====\n");
   /* Test 12: Verify that the data is correct. */
   for(r = 0; r < sizeof(buf); r++) {
     if(buf[r] != r) {
@@ -180,6 +209,8 @@ coffee_file_test(void)
     }
   }
 
+    DelayMs(1000);
+  printf("===== Test 13 =====\n");
   /* Test 13: Write a reversed buffer to the file. */
   for(r = 0; r < sizeof(buf); r++) {
     buf[r] = sizeof(buf) - r - 1;
@@ -197,6 +228,8 @@ coffee_file_test(void)
     FAIL(-20);
   }
 
+    DelayMs(1000);
+  printf("===== Test 14 =====\n");
   /* Test 14: Read the reversed buffer. */
   cfs_seek(rfd, 0, CFS_SEEK_SET);
   memset(buf, 0, sizeof(buf));
@@ -207,6 +240,7 @@ coffee_file_test(void)
     printf("r = %d\n", r);
     FAIL(-22);
   }
+#if 0
 
   /* Test 15: Verify that the data is correct. */
   for(r = 0; r < sizeof(buf); r++) {
@@ -214,6 +248,7 @@ coffee_file_test(void)
       FAIL(-23);
     }
   }
+#endif
 
   cfs_close(rfd);
   cfs_close(wfd);
@@ -221,8 +256,9 @@ coffee_file_test(void)
   if(cfs_coffee_reserve("T2", FILE_SIZE) < 0) {
     FAIL(-24);
   }
-#if 0
 
+    DelayMs(1000);
+  printf("===== Test 16 =====\n");
   /* Test 16: Test multiple writes at random offset. */
   for(r = 0; r < 100; r++) {
     wfd = cfs_open("T2", CFS_WRITE | CFS_READ);
@@ -261,8 +297,10 @@ coffee_file_test(void)
     }
   }
 
+    DelayMs(1000);
+  printf("===== Test 17 =====\n");
   /* Test 17: Append data to the same file many times. */
-#define APPEND_BYTES 1000
+#define APPEND_BYTES 100
 #define BULK_SIZE 10
   for(i = 0; i < APPEND_BYTES; i += BULK_SIZE) {
     afd = cfs_open("T3", CFS_WRITE | CFS_APPEND);
@@ -276,9 +314,12 @@ coffee_file_test(void)
       printf("r=%d\n", r);
       FAIL(-32);
     }
+    DelayMs(200);
     cfs_close(afd);
   }
 
+    DelayMs(1000);
+  printf("===== Test 18 =====\n");
   /* Test 18: Read back the data written in Test 17 and verify that it 
      is correct. */
   afd = cfs_open("T3", CFS_READ);
@@ -301,10 +342,9 @@ coffee_file_test(void)
     FAIL(-36);
   }
   cfs_close(afd);
-#endif
   error = 0;
 end:
-  cfs_close(wfd); //cfs_close(rfd); cfs_close(afd);
+  cfs_close(wfd); cfs_close(rfd); cfs_close(afd);
   return error;
 }
 /*---------------------------------------------------------------------------*/
